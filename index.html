@@ -12,17 +12,21 @@
   </style>
 </head>
 <body>
-  <main class="wrap"><div class="brand"><div class="logo">VT</div><div><h1>VISIÓN TAG</h1><p>Identificación inteligente · Demo</p></div></div><section class="card" id="app"></section></main>
+  <main class="wrap"><div class="brand"><div class="logo">VT</div><div><h1>VISIÓN TAG</h1><p>Identificación inteligente · Demo</p></div></div><section class="card" id="app"><p class="desc">Validando Visión Tag...</p></section></main>
   <script>
-    const campaigns={
-      'VT-000001':{campaign:'CAMPAÑA NUEVA',promo:'2×1',desc:'Nueva promoción asignada remotamente al mismo Visión Tag. El QR físico no fue modificado.'},
-      'VT-000002':{campaign:'CAMPAÑA B',promo:'2×1',desc:'Promoción demo validada para este Visión Tag.'},
-      'VT-000003':{campaign:'CAMPAÑA C',promo:'30% OFF',desc:'Promoción demo validada para este Visión Tag.'}
-    };
     const p=new URLSearchParams(location.search);const id=(p.get('vt')||'').trim().toUpperCase();const app=document.getElementById('app');
-    if(!id){app.innerHTML=`<div class="status"><span class="dot"></span>DEMO ACTIVA</div><div class="home">Escaneá un Visión Tag</div><p class="desc">La cámara del teléfono abre una URL permanente. El sistema lee el ID del VT, lo valida y muestra la promoción asociada.</p><div class="divider"></div><div class="examples"><a href="?vt=VT-000001">Probar VT-000001 · 2×1 · campaña nueva</a><a href="?vt=VT-000002">Probar VT-000002 · 2×1</a><a href="?vt=VT-000003">Probar VT-000003 · 30% OFF</a></div><div class="divider"></div><div class="small">VT · VISIÓN TAG</div>`}
-    else if(campaigns[id]){const c=campaigns[id];app.innerHTML=`<div class="status"><span class="dot"></span>✓ VT VALIDADO</div><div class="id">Identificador: <strong>${id}</strong></div><div class="campaign">${c.campaign}</div><div class="promo">${c.promo}</div><p class="desc">${c.desc}</p><div class="divider"></div><div class="small">Promoción asociada dinámicamente al identificador ${id}</div>`}
-    else{app.innerHTML=`<div class="status bad"><span class="dot"></span>VT NO VÁLIDO</div><div class="id">Identificador recibido: <strong>${id||'—'}</strong></div><div class="promo" style="font-size:32px">No encontramos este Visión Tag</div><p class="desc">El identificador no está registrado en esta demo.</p><div class="divider"></div><div class="small">VT · VISIÓN TAG</div>`}
+    async function run(){
+      let campaigns={};
+      try{const r=await fetch('campaigns.json?v='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error();campaigns=await r.json();}
+      catch(e){app.innerHTML=`<div class="status bad"><span class="dot"></span>ERROR TEMPORAL</div><div class="promo" style="font-size:30px">No se pudo cargar la campaña</div><p class="desc">Volvé a intentar en unos segundos.</p>`;return}
+      if(!id){
+        const links=Object.entries(campaigns).map(([key,c])=>`<a href="?vt=${key}">Probar ${key} · ${c.promo}</a>`).join('');
+        app.innerHTML=`<div class="status"><span class="dot"></span>DEMO ACTIVA</div><div class="home">Escaneá un Visión Tag</div><p class="desc">La cámara del teléfono abre una URL permanente. El sistema valida el ID y consulta la campaña publicada.</p><div class="divider"></div><div class="examples">${links}</div><div class="divider"></div><div class="small">VT · VISIÓN TAG</div>`;return;
+      }
+      if(campaigns[id]){const c=campaigns[id];app.innerHTML=`<div class="status"><span class="dot"></span>✓ VT VALIDADO</div><div class="id">Identificador: <strong>${id}</strong></div><div class="campaign">${c.campaign}</div><div class="promo">${c.promo}</div><p class="desc">${c.desc}</p><div class="divider"></div><div class="small">Promoción consultada dinámicamente para ${id}</div>`}
+      else{app.innerHTML=`<div class="status bad"><span class="dot"></span>VT NO VÁLIDO</div><div class="id">Identificador recibido: <strong>${id||'—'}</strong></div><div class="promo" style="font-size:32px">No encontramos este Visión Tag</div><p class="desc">El identificador no está registrado.</p><div class="divider"></div><div class="small">VT · VISIÓN TAG</div>`}
+    }
+    run();
   </script>
 </body>
 </html>
