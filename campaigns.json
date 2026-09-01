@@ -1,0 +1,17 @@
+{
+  "VT-000001": {
+    "campaign": "CAMPAÑA NUEVA",
+    "promo": "2×1",
+    "desc": "Nueva promoción asignada remotamente al mismo Visión Tag. El QR físico no fue modificado."
+  },
+  "VT-000002": {
+    "campaign": "CAMPAÑA B",
+    "promo": "2×1",
+    "desc": "Promoción demo validada para este Visión Tag."
+  },
+  "VT-000003": {
+    "campaign": "CAMPAÑA C",
+    "promo": "30% OFF",
+    "desc": "Promoción demo validada para este Visión Tag."
+  }
+}
