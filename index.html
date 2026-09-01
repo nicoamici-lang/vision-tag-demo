@@ -12,18 +12,15 @@
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <div class="brand"><div class="logo">VT</div><div><h1>VISIÓN TAG</h1><p>Identificación inteligente · Demo</p></div></div>
-    <section class="card" id="app"></section>
-  </main>
+  <main class="wrap"><div class="brand"><div class="logo">VT</div><div><h1>VISIÓN TAG</h1><p>Identificación inteligente · Demo</p></div></div><section class="card" id="app"></section></main>
   <script>
     const campaigns={
-      'VT-000001':{campaign:'CAMPAÑA A',promo:'20% DE DESCUENTO',desc:'Promoción demo validada para este Visión Tag.'},
+      'VT-000001':{campaign:'CAMPAÑA NUEVA',promo:'2×1',desc:'Nueva promoción asignada remotamente al mismo Visión Tag. El QR físico no fue modificado.'},
       'VT-000002':{campaign:'CAMPAÑA B',promo:'2×1',desc:'Promoción demo validada para este Visión Tag.'},
       'VT-000003':{campaign:'CAMPAÑA C',promo:'30% OFF',desc:'Promoción demo validada para este Visión Tag.'}
     };
     const p=new URLSearchParams(location.search);const id=(p.get('vt')||'').trim().toUpperCase();const app=document.getElementById('app');
-    if(!id){app.innerHTML=`<div class="status"><span class="dot"></span>DEMO ACTIVA</div><div class="home">Escaneá un Visión Tag</div><p class="desc">La cámara del teléfono abre una URL permanente. El sistema lee el ID del VT, lo valida y muestra la promoción asociada.</p><div class="divider"></div><div class="examples"><a href="?vt=VT-000001">Probar VT-000001 · 20% de descuento</a><a href="?vt=VT-000002">Probar VT-000002 · 2×1</a><a href="?vt=VT-000003">Probar VT-000003 · 30% OFF</a></div><div class="divider"></div><div class="small">VT · VISIÓN TAG</div>`}
+    if(!id){app.innerHTML=`<div class="status"><span class="dot"></span>DEMO ACTIVA</div><div class="home">Escaneá un Visión Tag</div><p class="desc">La cámara del teléfono abre una URL permanente. El sistema lee el ID del VT, lo valida y muestra la promoción asociada.</p><div class="divider"></div><div class="examples"><a href="?vt=VT-000001">Probar VT-000001 · 2×1 · campaña nueva</a><a href="?vt=VT-000002">Probar VT-000002 · 2×1</a><a href="?vt=VT-000003">Probar VT-000003 · 30% OFF</a></div><div class="divider"></div><div class="small">VT · VISIÓN TAG</div>`}
     else if(campaigns[id]){const c=campaigns[id];app.innerHTML=`<div class="status"><span class="dot"></span>✓ VT VALIDADO</div><div class="id">Identificador: <strong>${id}</strong></div><div class="campaign">${c.campaign}</div><div class="promo">${c.promo}</div><p class="desc">${c.desc}</p><div class="divider"></div><div class="small">Promoción asociada dinámicamente al identificador ${id}</div>`}
     else{app.innerHTML=`<div class="status bad"><span class="dot"></span>VT NO VÁLIDO</div><div class="id">Identificador recibido: <strong>${id||'—'}</strong></div><div class="promo" style="font-size:32px">No encontramos este Visión Tag</div><p class="desc">El identificador no está registrado en esta demo.</p><div class="divider"></div><div class="small">VT · VISIÓN TAG</div>`}
   </script>
