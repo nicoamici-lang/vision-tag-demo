@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Visión Tag · Demo</title>
+  <style>
+    :root{--bg:#07110c;--card:#0d1b13;--line:#173524;--green:#37e67a;--text:#f4fff7;--muted:#99b7a5;--bad:#ff6b6b}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#12331f 0,#07110c 46%,#040806 100%);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:24px}
+    .wrap{width:min(520px,100%)}.brand{display:flex;align-items:center;gap:12px;margin-bottom:18px}.logo{width:54px;height:54px;border:2px solid var(--green);border-radius:16px;display:grid;place-items:center;font-weight:900;font-size:22px;box-shadow:0 0 24px #37e67a33}.brand h1{font-size:22px;margin:0}.brand p{margin:3px 0 0;color:var(--muted);font-size:13px}
+    .card{background:#0d1b13dd;border:1px solid var(--line);border-radius:24px;padding:26px;box-shadow:0 22px 70px #0008}.status{display:inline-flex;align-items:center;gap:8px;border:1px solid #2f8c52;background:#123d24;color:#baffcf;padding:9px 13px;border-radius:999px;font-size:13px;font-weight:800}.status.bad{border-color:#7f2e2e;background:#3c1616;color:#ffd0d0}.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}.bad .dot{background:var(--bad);box-shadow:none}.id{color:var(--muted);margin-top:16px;font-size:14px}.campaign{margin-top:24px;font-size:14px;color:#b9d7c3;text-transform:uppercase;letter-spacing:.14em;font-weight:800}.promo{font-size:42px;line-height:1.02;margin:8px 0 10px;font-weight:950;letter-spacing:-.04em}.desc{color:var(--muted);line-height:1.5;margin:0}.divider{height:1px;background:var(--line);margin:24px 0}.small{font-size:12px;color:#6f8f79;text-align:center}.home{font-size:30px;font-weight:900;margin:8px 0 12px}.examples{margin-top:18px;display:grid;gap:10px}.examples a{display:block;text-decoration:none;color:var(--text);border:1px solid var(--line);padding:13px 15px;border-radius:14px;background:#0a160f}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="brand"><div class="logo">VT</div><div><h1>VISIÓN TAG</h1><p>Identificación inteligente · Demo</p></div></div>
+    <section class="card" id="app"></section>
+  </main>
+  <script>
+    const campaigns={
+      'VT-000001':{campaign:'CAMPAÑA A',promo:'20% DE DESCUENTO',desc:'Promoción demo validada para este Visión Tag.'},
+      'VT-000002':{campaign:'CAMPAÑA B',promo:'2×1',desc:'Promoción demo validada para este Visión Tag.'},
+      'VT-000003':{campaign:'CAMPAÑA C',promo:'30% OFF',desc:'Promoción demo validada para este Visión Tag.'}
+    };
+    const p=new URLSearchParams(location.search);const id=(p.get('vt')||'').trim().toUpperCase();const app=document.getElementById('app');
+    if(!id){app.innerHTML=`<div class="status"><span class="dot"></span>DEMO ACTIVA</div><div class="home">Escaneá un Visión Tag</div><p class="desc">La cámara del teléfono abre una URL permanente. El sistema lee el ID del VT, lo valida y muestra la promoción asociada.</p><div class="divider"></div><div class="examples"><a href="?vt=VT-000001">Probar VT-000001 · 20% de descuento</a><a href="?vt=VT-000002">Probar VT-000002 · 2×1</a><a href="?vt=VT-000003">Probar VT-000003 · 30% OFF</a></div><div class="divider"></div><div class="small">VT · VISIÓN TAG</div>`}
+    else if(campaigns[id]){const c=campaigns[id];app.innerHTML=`<div class="status"><span class="dot"></span>✓ VT VALIDADO</div><div class="id">Identificador: <strong>${id}</strong></div><div class="campaign">${c.campaign}</div><div class="promo">${c.promo}</div><p class="desc">${c.desc}</p><div class="divider"></div><div class="small">Promoción asociada dinámicamente al identificador ${id}</div>`}
+    else{app.innerHTML=`<div class="status bad"><span class="dot"></span>VT NO VÁLIDO</div><div class="id">Identificador recibido: <strong>${id||'—'}</strong></div><div class="promo" style="font-size:32px">No encontramos este Visión Tag</div><p class="desc">El identificador no está registrado en esta demo.</p><div class="divider"></div><div class="small">VT · VISIÓN TAG</div>`}
+  </script>
+</body>
+</html>
