@@ -13,5 +13,26 @@
     "campaign": "CAMPAÑA C",
     "promo": "30% OFF",
     "desc": "Promoción demo validada para este Visión Tag."
+  },
+  "VT-AR-CHU-TRE-000001": {
+    "campaign": "CAMPAÑA prueba 50",
+    "promo": "50% descuento",
+    "desc": "Promoción asociada al identificador óptico VISIÓN TAG validado por el lector.",
+    "merchant": "Comercio demo",
+    "until": "Demo vigente"
+  },
+  "VT-AR-CHU-TRE-000002": {
+    "campaign": "CAMPAÑA B",
+    "promo": "2×1",
+    "desc": "Promoción asociada al identificador óptico VISIÓN TAG 000002.",
+    "merchant": "Comercio demo",
+    "until": "Demo vigente"
+  },
+  "VT-AR-CHU-TRE-000003": {
+    "campaign": "CAMPAÑA C",
+    "promo": "30% OFF",
+    "desc": "Promoción asociada al identificador óptico VISIÓN TAG 000003.",
+    "merchant": "Comercio demo",
+    "until": "Demo vigente"
   }
 }
