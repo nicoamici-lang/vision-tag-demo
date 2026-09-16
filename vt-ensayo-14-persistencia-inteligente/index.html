@@ -1,0 +1,13 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VT-14 Persistencia inteligente</title><body style="margin:0;background:#07130f;color:white;font-family:Arial"><div id="boot" style="max-width:820px;margin:auto;padding:24px"><h1>VISIÓN TAG · ENSAYO VT-14</h1><p>Preparando lector autónomo con persistencia inteligente de aciertos exactos…</p></div><script>
+(async()=>{try{
+let h=await (await fetch('../vt-ensayo-13-consenso-temporal/index.html?vt14base=1',{cache:'no-store'})).text();
+h=h.replaceAll('VT-13 Consenso temporal','VT-14 Persistencia inteligente').replaceAll('VISIÓN TAG · ENSAYO VT-13','VISIÓN TAG · ENSAYO VT-14').replace('Versión autónoma. Lector VT-10 estable + seguimiento geométrico. Sólo lecturas exactas 36/36 del mismo ID acumulan validación; no carga VT-12 ni VT-11 dinámicamente.','Persistencia inteligente. Sólo una lectura exacta 36/36 suma. Los fotogramas imperfectos intermedios no suman ni borran los aciertos recientes. Un ID exacto diferente reinicia inmediatamente la evidencia.');
+h=h.replace("function addHit(id){if(exactId!==id){exactId=id;hits=[]}hits.push(Date.now());let cut=Date.now()-2600;hits=hits.filter(t=>t>=cut);return Math.min(10,hits.length)}","function addHit(id){let now=Date.now();if(exactId!==null&&exactId!==id){hits=[]}exactId=id;hits.push(now);let cut=now-6500;hits=hits.filter(t=>t>=cut);return Math.min(10,hits.length)}");
+h=h.replaceAll("Date.now()-2600","Date.now()-6500");
+h=h.replaceAll("7. Consenso exacto:","7. Persistencia exacta:");
+h=h.replace("$('hyp').textContent='Hipótesis: '+best.label+' · escala '+best.scale.toFixed(2);","$('hyp').textContent='Hipótesis: '+best.label+' · escala '+best.scale.toFixed(2)+' · ventana exacta 6.5 s';");
+// convertir en documento final: no hay dependencia en ejecución una vez cargado; el navegador recibe el HTML completo.
+document.open();document.write(h);document.close();
+}catch(e){document.getElementById('boot').innerHTML='<h1>VT-14</h1><p>Error al preparar lector: '+e.message+'</p>'}
+})();
+</script></body>
