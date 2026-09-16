@@ -1,0 +1,26 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VT-22 Distancia + movimiento</title><style>body{font-family:Arial;background:#07130f;color:#fff;padding:24px;text-align:center}h1{margin-top:18vh}p{font-size:18px}</style><h1>VISIÓN TAG · ENSAYO VT-22</h1><p id="m">Cargando VT-22 sobre el núcleo validado de VT-21…</p><script>
+(async()=>{try{
+let h=await fetch('../vt-ensayo-21-flujo-optico/index.html?vt22=1',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('BASE '+r.status);return r.text()});
+h=h.replaceAll('VT-21 Flujo óptico','VT-22 Distancia + movimiento').replaceAll('VISIÓN TAG · ENSAYO VT-21','VISIÓN TAG · ENSAYO VT-22');
+h=h.replace('Seguimiento de las cuatro esquinas desde el primer 0/36 mediante flujo óptico Lucas-Kanade. Si el flujo pierde calidad vuelve a búsqueda global. Sólo 0/36 suma; 10/10 valida.','Prueba real de distancia, inclinación, movimiento y vidrio/reflejos. Conserva flujo óptico LK de cuatro esquinas. Sólo una lectura exacta 0/36 suma; 10/10 valida.');
+// VT-22: tolerar marcadores más pequeños sin relajar la autenticación 0/36.
+h=h.replace('if(a>450){','if(a>220){');
+h=h.replace("if(f>.002&&f<.45&&fill>.22)","if(f>.0007&&f<.45&&fill>.20)");
+h=h.replace('return out.slice(0,14)','return out.slice(0,20)');
+// Más hipótesis globales para distancia/perspectiva. El criterio de aceptación sigue siendo dist===0.
+h=h.replace("for(const c of cs.slice(0,10))for(const s of[.84,.90,.96,1,1.04,1.10,1.16])", "for(const c of cs.slice(0,14))for(const s of[.78,.84,.90,.96,1,1.04,1.10,1.16,1.22])");
+// LK con pirámide y ventana algo mayores para movimiento real; error admisible sólo para conservar seguimiento geométrico.
+h=h.replace('new cv.Size(21,21),3,new cv.TermCriteria', 'new cv.Size(27,27),4,new cv.TermCriteria');
+h=h.replace('e<35','e<45');
+// Refinamiento local más amplio alrededor de la predicción óptica.
+h=h.replace("for(const s of[.992,.996,1,1.004,1.008])tries.push({p:hyp(flowPred.p,s),label:'FLUJO LK '+s.toFixed(3)});for(const u of[.45,.9])", "for(const s of[.988,.992,.996,1,1.004,1.008,1.012])tries.push({p:hyp(flowPred.p,s),label:'FLUJO LK '+s.toFixed(3)});for(const u of[.45,.9,1.35])");
+// Mantener el ancla un poco más durante oclusiones/movimiento, sin sumar lecturas no exactas.
+h=h.replaceAll('anchorAge<60','anchorAge<75').replaceAll('anchorAge>60','anchorAge>75').replaceAll("'/60'","'/75'");
+// Ventana temporal moderadamente mayor para una prueba en movimiento. Sigue exigiendo diez frames 0/36.
+h=h.replace('Date.now()-6500','Date.now()-8500');
+// Etiquetas diagnósticas de prueba real.
+h=h.replace("S('geo','✓ 4. '+tries.length+' hipótesis','ok');", "S('geo','✓ 4. '+tries.length+' hipótesis · DISTANCIA/MOVIMIENTO','ok');");
+document.open();document.write(h);document.close();
+}catch(e){document.getElementById('m').textContent='Error al cargar VT-22: '+e.message}}
+)();
+</script>
