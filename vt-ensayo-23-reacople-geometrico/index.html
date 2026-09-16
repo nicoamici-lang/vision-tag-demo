@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VT-23 Reacople geométrico</title><style>body{font-family:Arial;background:#07130f;color:#fff;padding:24px;text-align:center}h1{margin-top:18vh}p{font-size:18px}</style><h1>VISIÓN TAG · ENSAYO VT-23</h1><p id="m">Cargando VT-23 sobre el núcleo validado de VT-22…</p><script>
+(async()=>{try{
+let h=await fetch('../vt-ensayo-22-distancia-movimiento/index.html?vt23=1',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('BASE '+r.status);return r.text()});
+h=h.replaceAll('VT-22 Distancia + movimiento','VT-23 Reacople geométrico').replaceAll('VISIÓN TAG · ENSAYO VT-22','VISIÓN TAG · ENSAYO VT-23');
+h=h.replace('Prueba real de distancia, inclinación, movimiento y vidrio/reflejos. Conserva flujo óptico LK de cuatro esquinas. Sólo una lectura exacta 0/36 suma; 10/10 valida.','Reacople geométrico: el flujo óptico predice la zona y cada frame vuelve a ajustar las cuatro esquinas contra candidatos reales. Sólo 0/36 autentica y suma; 10/10 valida.');
+// VT-23: no dejamos que LK sea la geometría final. Lo usamos como predictor y reacoplamos a contornos reales cercanos.
+h=h.replace("let cs=candidates(th,w,h),tries=[],flowPred=null;if(anchor&&anchorAge<60){flowPred=optical(gr);if(flowPred){for(const s of[.992,.996,1,1.004,1.008])tries.push({p:hyp(flowPred.p,s),label:'FLUJO LK '+s.toFixed(3)});for(const u of[.45,.9])for(const [dx,dy] of[[-u,0],[u,0],[0,-u],[0,u]])tries.push({p:flowPred.p.map(z=>({x:z.x+dx,y:z.y+dy})),label:'LK AJUSTE '+u.toFixed(2)})}else tries.push(...variants(anchor))}if(track)",`let cs=candidates(th,w,h),tries=[],flowPred=null;if(anchor&&anchorAge<60){flowPred=optical(gr);if(flowPred){let fc=center(flowPred.p),fs=Math.max(12,Math.hypot(flowPred.p[0].x-flowPred.p[2].x,flowPred.p[0].y-flowPred.p[2].y));let near=cs.map(c=>{let cc=center(c.p),ds=Math.max(12,Math.hypot(c.p[0].x-c.p[2].x,c.p[0].y-c.p[2].y));return{c,d:Math.hypot(cc.x-fc.x,cc.y-fc.y)/fs,sz:Math.abs(ds-fs)/fs}}).filter(x=>x.d<.65&&x.sz<.60).sort((a,b)=>(a.d+a.sz)-(b.d+b.sz)).slice(0,8);for(const x of near)for(const s of[.94,.97,1,1.03,1.06])tries.push({p:hyp(x.c.p,s),label:'REACOPLE '+s.toFixed(2)});for(const s of[.992,.996,1,1.004,1.008])tries.push({p:hyp(flowPred.p,s),label:'PRED LK '+s.toFixed(3)})}else tries.push(...variants(anchor))}if(track)`);
+// Cuando una hipótesis reacoplada vuelve a 0/36, cortar inmediatamente y sembrar esa geometría exacta.
+h=h.replace("if(z.d.dist===0&&anchor&&(t.label.startsWith('FLUJO')||t.label.startsWith('LK ')||t.label.startsWith('SUBPIX')))break","if(z.d.dist===0&&anchor&&(t.label.startsWith('REACOPLE')||t.label.startsWith('PRED LK')||t.label.startsWith('FLUJO')||t.label.startsWith('LK ')||t.label.startsWith('SUBPIX')))break");
+// Diagnóstico explícito: un ID sólo se presenta como autenticado en un frame 0/36.
+h=h.replace("$('id').textContent='VT: '+validatedVT;","$('id').textContent='VT AUTENTICADO: '+validatedVT;");
+h=h.replace("S('dec','6. Mejor coincidencia · '+best.d.dist+'/36','wait');","$('id').textContent=anchorId!==null?'Último ID exacto: VT-'+String(anchorId).padStart(6,'0'):'VT: —';S('dec','6. Frame actual NO autenticado · '+best.d.dist+'/36','wait');");
+// Etiquetas VT-23.
+h=h.replace("S('geo','✓ 4. '+tries.length+' hipótesis · DISTANCIA/MOVIMIENTO','ok');","S('geo','✓ 4. '+tries.length+' hipótesis · REACOPLE GEOMÉTRICO','ok');");
+h=h.replaceAll('FLUJO ÓPTICO ACTIVO','REACOPLE ACTIVO').replaceAll('FLUJO ÓPTICO · RECUPERANDO','REACOPLE · RECUPERANDO');
+document.open();document.write(h);document.close();
+}catch(e){document.getElementById('m').textContent='Error al cargar VT-23: '+e.message}}
+)();
+</script>
