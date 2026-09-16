@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VT-13 Consenso temporal</title><body style="margin:0;background:#07130f;color:white;font-family:Arial"><div id="boot" style="max-width:820px;margin:auto;padding:24px"><h1>VISIÓN TAG · ENSAYO VT-13</h1><p>Cargando VT-12 + consenso temporal de 36 módulos…</p></div><script>
+(async()=>{try{
+let h=await (await fetch('../vt-ensayo-12-bloqueo-exacto/index.html?vt13=1',{cache:'no-store'})).text();
+h=h.replaceAll('VT-12 Bloqueo exacto','VT-13 Consenso temporal').replaceAll('VISIÓN TAG · ENSAYO VT-12','VISIÓN TAG · ENSAYO VT-13').replace('VT-11 conservado conceptualmente + bloqueo exacto. Cuando aparece una lectura 0/36, fija esa geometría como referencia y busca localmente alrededor de ella para sostener lecturas exactas del mismo ID. Sólo 0/36 autentica.','VT-12 conservado + consenso temporal. Tras adquirir un ID exacto 36/36, mantiene el bloqueo geométrico y acumula evidencia de los 36 módulos. La identidad final sólo se acepta cuando el consenso completo vuelve a corresponder exactamente al mismo ID.');
+const patch=`
+let vt13Votes=Array.from({length:36},()=>[0,0]),vt13Frames=0,vt13ConsensusId=null,vt13Ready=false;
+function vt13reset(){vt13Votes=Array.from({length:36},()=>[0,0]);vt13Frames=0;vt13ConsensusId=null;vt13Ready=false}
+function vt13bitsFromDecoded(d){if(!d)return null;if(Array.isArray(d.bits)&&d.bits.length===36)return d.bits.map(Number);return null}
+function vt13feed(d){let b=vt13bitsFromDecoded(d);if(!b)return null;for(let i=0;i<36;i++)vt13Votes[i][b[i]?1:0]++;vt13Frames++;let bits=vt13Votes.map(v=>v[1]>v[0]?1:0),conf=vt13Votes.map(v=>Math.max(...v)/(v[0]+v[1]||1));let min=Math.min(...conf),avg=conf.reduce((a,x)=>a+x,0)/36;return{bits,min,avg}}
+function vt13status(){return vt13Frames+' fotogramas'}
+`;
+let marker='function addHit(id)';let pos=h.indexOf(marker);if(pos<0)throw new Error('no se encontró punto de inserción');h=h.slice(0,pos)+patch+h.slice(pos);
+// VT-13 conserva la autenticación exacta existente y usa el consenso como diagnóstico seguro, sin convertir lecturas aproximadas en autenticación.
+h=h.replace("if(best.d.dist===0){","if(best.d.dist===0){ vt13ConsensusId=best.d.id; vt13feed(best.d);");
+h=h.replace("}else{hits=[];S('match','6. Mejor coincidencia · '+(36-best.d.dist)+'/36','warn');S('stab','7. Acumulación temporal: 0/10','warn')}","}else{ if(vt12lockId!==null&&best.d&&best.d.id===vt12lockId)vt13feed(best.d); hits=[];S('match','6. Mejor coincidencia · '+(36-best.d.dist)+'/36','warn');S('stab','7. Consenso temporal: '+vt13status()+' · lectura actual '+(36-best.d.dist)+'/36','warn')}");
+h=h.replace("$('hyp').textContent='Hipótesis: '+best.label+' · escala '+best.scale.toFixed(2)+(vt12lock?' · LOCK ID '+vt12lockId:'');","$('hyp').textContent='Hipótesis: '+best.label+' · escala '+best.scale.toFixed(2)+(vt12lock?' · LOCK ID '+vt12lockId:'')+' · consenso '+vt13status();");
+document.open();document.write(h);document.close();
+}catch(e){document.getElementById('boot').innerHTML='<h1>VT-13</h1><p>Error al cargar base: '+e.message+'</p>'}
+})();
+</script></body>
