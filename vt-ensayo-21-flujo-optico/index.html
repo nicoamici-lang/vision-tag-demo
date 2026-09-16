@@ -1,0 +1,25 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VT-21 Flujo óptico</title><style>body{font-family:Arial;background:#07130f;color:#fff;padding:24px;text-align:center}h1{margin-top:18vh}p{font-size:18px}</style><h1>VISIÓN TAG · ENSAYO VT-21</h1><p id="m">Cargando seguimiento óptico de esquinas…</p><script>
+(async()=>{try{
+let h=await fetch('../vt-ensayo-17-seguimiento-subpixel/index.html?vt21=1',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('BASE '+r.status);return r.text()});
+h=h.replaceAll('VT-17 Seguimiento subpíxel','VT-21 Flujo óptico').replaceAll('VISIÓN TAG · ENSAYO VT-17','VISIÓN TAG · ENSAYO VT-21').replace('Seguimiento subpíxel desde la primera geometría exacta 0/36. Cámara estable de VT-16. Sólo 0/36 suma; 10/10 valida.','Seguimiento de las cuatro esquinas desde el primer 0/36 mediante flujo óptico Lucas-Kanade. Si el flujo pierde calidad vuelve a búsqueda global. Sólo 0/36 suma; 10/10 valida.');
+// Estado del flujo óptico.
+h=h.replace("let stream,running=false,busy=false,track=null,anchor=null,anchorId=null,anchorAge=0,hits=[],exactId=null,validatedVT=null,done=false;","let stream,running=false,busy=false,track=null,anchor=null,anchorId=null,anchorAge=0,hits=[],exactId=null,validatedVT=null,done=false,ofPrev=null,ofPts=null,ofGood=0;");
+h=h.replace("function stop(){running=false;if(stream)","function clearOF(){if(ofPrev){ofPrev.delete();ofPrev=null}if(ofPts){ofPts.delete();ofPts=null}ofGood=0}function stop(){running=false;clearOF();if(stream)");
+h=h.replace("track=anchor=null;anchorId=null;anchorAge=0;hits=[];","track=anchor=null;anchorId=null;anchorAge=0;clearOF();hits=[];");
+// Utilidades LK: cuatro esquinas como puntos persistentes.
+h=h.replace("function center(p){",`function seedOF(gray,p){clearOF();ofPrev=gray.clone();ofPts=cv.matFromArray(4,1,cv.CV_32FC2,p.flatMap(z=>[z.x,z.y]));ofGood=4}function optical(gray){if(!ofPrev||!ofPts)return null;let nxt=new cv.Mat(),st=new cv.Mat(),er=new cv.Mat();try{cv.calcOpticalFlowPyrLK(ofPrev,gray,ofPts,nxt,st,er,new cv.Size(21,21),3,new cv.TermCriteria(cv.TermCriteria_EPS|cv.TermCriteria_COUNT,20,.03),0,.001);let q=[],good=0,maxErr=0;for(let i=0;i<4;i++){let ok=st.ucharPtr(i,0)[0]===1,e=er.floatPtr(i,0)[0];if(ok&&Number.isFinite(e)&&e<35)good++;maxErr=Math.max(maxErr,Number.isFinite(e)?e:99);q.push({x:nxt.floatPtr(i,0)[0],y:nxt.floatPtr(i,0)[1]})}if(good===4){ofPrev.delete();ofPrev=gray.clone();ofPts.delete();ofPts=nxt.clone();ofGood=good;return{p:canonical(q),err:maxErr}}ofGood=good;return null}finally{nxt.delete();st.delete();er.delete()}}function center(p){`);
+// Tras el procesamiento gris, priorizar flujo óptico cuando existe ancla.
+h=h.replace("let cs=candidates(th,w,h),tries=[];if(anchor&&anchorAge<60)tries.push(...variants(anchor));if(track)",`let cs=candidates(th,w,h),tries=[],flowPred=null;if(anchor&&anchorAge<60){flowPred=optical(gr);if(flowPred){for(const s of[.992,.996,1,1.004,1.008])tries.push({p:hyp(flowPred.p,s),label:'FLUJO LK '+s.toFixed(3)});for(const u of[.45,.9])for(const [dx,dy] of[[-u,0],[u,0],[0,-u],[0,u]])tries.push({p:flowPred.p.map(z=>({x:z.x+dx,y:z.y+dy})),label:'LK AJUSTE '+u.toFixed(2)})}else tries.push(...variants(anchor))}if(track)`);
+// Si el flujo da 0/36, cortar temprano.
+h=h.replace("if(z.d.dist===0&&anchor&&t.label.startsWith('SUBPIX'))break","if(z.d.dist===0&&anchor&&(t.label.startsWith('FLUJO')||t.label.startsWith('LK ')||t.label.startsWith('SUBPIX')))break");
+// Cada lectura exacta vuelve a sembrar las 4 esquinas en el frame gris actual.
+h=h.replace("anchor=best.p.map(z=>({...z}));anchorId=best.d.id;anchorAge=0;","anchor=best.p.map(z=>({...z}));anchorId=best.d.id;anchorAge=0;seedOF(gr,anchor);");
+// Al perder el ancla, limpiar el tracker LK.
+h=h.replace("if(anchorAge>60){anchor=null;anchorId=null}","if(anchorAge>60){anchor=null;anchorId=null;clearOF()}");
+h=h.replaceAll('SUBPÍXEL ACTIVO','FLUJO ÓPTICO ACTIVO').replaceAll('SUBPÍXEL BUSCANDO','FLUJO ÓPTICO · RECUPERANDO').replaceAll('Subpíxel: esperando ancla 0/36','Flujo óptico: esperando primer 0/36').replaceAll('5. Subpíxel: esperando ancla 0/36','5. Flujo óptico: esperando primer 0/36');
+// Mostrar calidad LK en diagnóstico de hipótesis.
+h=h.replace("$('hyp').textContent='Hipótesis: '+best.label+(anchor?' · ANCLA '+anchorAge+'/60':'');","$('hyp').textContent='Hipótesis: '+best.label+(anchor?' · ANCLA '+anchorAge+'/60':'')+(ofPts?' · LK '+ofGood+'/4':'');");
+document.open();document.write(h);document.close();
+}catch(e){document.getElementById('m').textContent='Error al cargar VT-21: '+e.message}}
+)();
+</script>
