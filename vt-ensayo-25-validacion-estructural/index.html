@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VT-25 Validación estructural</title><style>body{font-family:Arial;background:#07130f;color:#fff;padding:24px;text-align:center}h1{margin-top:18vh}p{font-size:18px}</style><h1>VISIÓN TAG · ENSAYO VT-25</h1><p id="m">Cargando VT-25 sobre VT-24…</p><script>
+(async()=>{try{
+let h=await fetch('../vt-ensayo-24-contorno-exterior/index.html?vt25=1',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('BASE '+r.status);return r.text()});
+h=h.replaceAll('VT-24 Contorno exterior bloqueado','VT-25 Validación estructural').replaceAll('VISIÓN TAG · ENSAYO VT-24','VISIÓN TAG · ENSAYO VT-25');
+h=h.replace('Bloqueo del contorno exterior completo desde el primer 0/36. LK sólo predice la zona; se rechazan fragmentos internos incompatibles con el tamaño y geometría del último VT exacto. Sólo 0/36 suma; 10/10 valida.','Validación estructural previa de candidatos y bloqueo de identidad después del primer 0/36. Se penalizan fragmentos internos y objetos ajenos antes de la decodificación. Sólo 0/36 suma; 10/10 valida.');
+// VT-25: puntuación estructural suave. No reemplaza la autenticación 0/36: sólo ordena/filtra candidatos geométricos.
+h=h.replace("function geom24(p){",`function structure25(p){let ds=[0,1,2,3].map(i=>Math.hypot(p[i].x-p[(i+1)%4].x,p[i].y-p[(i+1)%4].y));let mn=Math.min(...ds),mx=Math.max(...ds),d1=Math.hypot(p[0].x-p[2].x,p[0].y-p[2].y),d2=Math.hypot(p[1].x-p[3].x,p[1].y-p[3].y);if(mn<8||mx/mn>2.35)return 0;let opp=Math.min(ds[0],ds[2])/Math.max(ds[0],ds[2])*Math.min(ds[1],ds[3])/Math.max(ds[1],ds[3]);let diag=Math.min(d1,d2)/Math.max(d1,d2);return Math.max(0,Math.min(1,.55*opp+.45*diag))}function geom24(p){`);
+// Tras obtener candidatos, descartar geometrías claramente no cuadriláteras y priorizar las estructuralmente consistentes.
+h=h.replace("let cs=candidates(th,w,h),tries=[],flowPred=null;",`let cs=candidates(th,w,h);cs=cs.map(c=>({c,s25:structure25(c.p)})).filter(x=>x.s25>.34).sort((a,b)=>b.s25-a.s25).map(x=>x.c);let tries=[],flowPred=null;`);
+// Con identidad exacta adquirida, un candidato debe además parecerse al perímetro autenticado. Evita saltos a objetos vecinos.
+h=h.replace("function compatible24(p,pred){if(!outerRef)return true;",`function compatible24(p,pred){if(structure25(p)<.34)return false;if(!outerRef)return true;`);
+// El seguimiento por LK queda como predicción, pero su geometría también debe conservar estructura antes de generar hipótesis.
+h=h.replace("let pred=flowPred?flowPred.p:anchor;if(outerRef){",`let pred=(flowPred&&structure25(flowPred.p)>.30)?flowPred.p:anchor;if(outerRef){`);
+// Diagnóstico visible.
+h=h.replace("S('geo','✓ 4. '+tries.length+' hipótesis · CONTORNO EXTERIOR','ok');",`S('geo','✓ 4. '+tries.length+' hipótesis · FILTRO ESTRUCTURAL VT-25','ok');`);
+h=h.replaceAll('CONTORNO EXTERIOR BLOQUEADO','ESTRUCTURA + CONTORNO BLOQUEADOS').replaceAll('CONTORNO EXTERIOR · REACOPLANDO','ESTRUCTURA VT · REACOPLANDO');
+h=h.replace("$('hyp').textContent='Hipótesis: '+best.label+(anchor?' · ANCLA '+anchorAge+'/75':'')+(outerRef?' · PERÍMETRO BLOQUEADO':'')+(ofPts?' · LK '+ofGood+'/4':'');",`$('hyp').textContent='Hipótesis: '+best.label+(anchor?' · ANCLA '+anchorAge+'/75':'')+(outerRef?' · PERÍMETRO+ESTRUCTURA':'')+(ofPts?' · LK '+ofGood+'/4':'');`);
+document.open();document.write(h);document.close();
+}catch(e){document.getElementById('m').textContent='Error al cargar VT-25: '+e.message}}
+)();
+</script>
