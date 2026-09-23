@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VT-AUTH LAB 01</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#eef;background:#070b16}*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at top,#18264a,#070b16 55%);min-height:100vh}.wrap{max-width:720px;margin:auto;padding:18px}
+h1{margin:4px 0;font-size:28px;letter-spacing:.5px}.sub{color:#aeb9d4;margin:0 0 16px}.card{background:#10182b;border:1px solid #263659;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 12px 30px #0005}
+button{width:100%;border:0;border-radius:13px;padding:14px;margin:6px 0;font-weight:800;font-size:15px;cursor:pointer;background:#4f7cff;color:white}
+button.alt{background:#202d49}.danger{background:#853e51}.good{color:#70efb1}.bad{color:#ff8097}.warn{color:#ffd166}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.kv{background:#0b1120;border-radius:11px;padding:10px}.k{font-size:11px;color:#8493b4;text-transform:uppercase}.v{font-weight:750;margin-top:3px}
+.badge{display:inline-block;padding:7px 10px;border-radius:999px;background:#1b2946;font-weight:800}.cert{background:#123c30;color:#78efbb}.no{background:#491f2a;color:#ff9daf}
+#video{width:100%;border-radius:14px;background:#02040a;display:none;max-height:320px;object-fit:cover}.log{font:12px ui-monospace,monospace;max-height:230px;overflow:auto;white-space:pre-wrap;color:#bdc9e5}
+small{color:#8390ad}.sep{height:1px;background:#263659;margin:12px 0}
+</style></head><body><main class="wrap">
+<h1>VISION TAG · AUTH LAB</h1><p class="sub">VT-AUTH-01 · laboratorio de autenticación y CVC</p>
+<section class="card"><video id="video" autoplay playsinline muted></video><button id="cam">ABRIR CÁMARA</button>
+<small>En esta primera versión la cámara demuestra el flujo móvil; los 3 botones inferiores simulan el resultado del lector VT para aislar y probar la capa AUTH.</small></section>
+<section class="card"><b>ESCENARIOS DE PRUEBA</b>
+<button onclick="scan('real')">LEER VT-000001 AUTÉNTICO</button>
+<button class="danger" onclick="scan('fake')">LEER VT FALSO</button>
+<button class="alt" onclick="scan('clone')">LEER COPIA DE VT-000001</button></section>
+<section class="card"><div id="badge" class="badge">SIN LECTURA</div><div class="sep"></div>
+<div class="grid">
+<div class="kv"><div class="k">VT detectado</div><div id="id" class="v">—</div></div>
+<div class="kv"><div class="k">Categoría</div><div id="cat" class="v">—</div></div>
+<div class="kv"><div class="k">Firma</div><div id="sig" class="v">—</div></div>
+<div class="kv"><div class="k">Registro</div><div id="reg" class="v">—</div></div>
+<div class="kv"><div class="k">Estado</div><div id="state" class="v">—</div></div>
+<div class="kv"><div class="k">Anticlonación</div><div id="clone" class="v">—</div></div>
+<div class="kv"><div class="k">Lecturas</div><div id="reads" class="v">0</div></div>
+<div class="kv"><div class="k">CVC válidos</div><div id="cvcs" class="v">0</div></div>
+</div><button id="interact" disabled>INTERACCIÓN DE PRUEBA → VALIDAR CVC</button>
+<small>Una lectura nunca genera un CVC automáticamente.</small></section>
+<section class="card"><b>HISTORIAL DE EVENTOS</b><div id="log" class="log">Esperando prueba…</div></section>
+<section class="card"><b>NOTA DE SEGURIDAD</b><p style="margin-bottom:4px">Demo de arquitectura. No contiene clave privada ni algoritmo definitivo de emisión. La verificación criptográfica real y el motor antifraude deberán ejecutarse en backend privado.</p></section>
+</main><script>
+let reads=0,cvcs=0,current=null,stream=null;
+const $=id=>document.getElementById(id);
+function log(m){const t=new Date().toLocaleTimeString(); $('log').textContent=(`[${t}] ${m}\n`)+($('log').textContent==='Esperando prueba…'?'':$('log').textContent)}
+function paint(x){
+$('id').textContent=x.id;$('cat').textContent=x.cat;$('sig').textContent=x.sig;$('reg').textContent=x.reg;$('state').textContent=x.state;$('clone').textContent=x.clone;
+$('reads').textContent=reads;$('cvcs').textContent=cvcs;
+$('badge').textContent=x.cert;$('badge').className='badge '+(x.ok?'cert':'no');$('interact').disabled=!x.ok||x.suspect;
+}
+function scan(type){
+reads++; 
+if(type==='real'){current={id:'VT-000001',cat:'AUTO',sig:'✓ VÁLIDA',reg:'✓ EXISTE',state:'✓ ACTIVO',clone:'SIN ALERTA',cert:'VT CERTIFICADO ✓',ok:true,suspect:false};log('LECTURA → firma válida → registro válido → VT certificado. CVC todavía NO generado.')}
+if(type==='fake'){current={id:'VT-999999',cat:'—',sig:'✕ INVÁLIDA',reg:'✕ NO EXISTE',state:'RECHAZADO',clone:'—',cert:'VT NO CERTIFICADO ✕',ok:false,suspect:false};log('LECTURA → firma/registro inválidos → rechazado.')}
+if(type==='clone'){current={id:'VT-000001',cat:'AUTO',sig:'✓ VÁLIDA',reg:'✓ EXISTE',state:'EN OBSERVACIÓN',clone:'⚠ POSIBLE CLON',cert:'VT EN OBSERVACIÓN ⚠',ok:true,suspect:true};log('LECTURA → firma válida porque es copia de un VT genuino → motor antifraude marca POSIBLE CLON → CVC bloqueado.')}
+paint(current);
+}
+$('interact').onclick=()=>{if(!current||!current.ok||current.suspect)return;cvcs++;const c='CVC-'+String(cvcs).padStart(8,'0');$('cvcs').textContent=cvcs;log('INTERACCIÓN → controles aprobados → '+c+' generado → evento liquidable.');$('interact').disabled=true;}
+$('cam').onclick=async()=>{try{if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;$('video').style.display='none';$('cam').textContent='ABRIR CÁMARA';return}
+stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});$('video').srcObject=stream;$('video').style.display='block';$('cam').textContent='CERRAR CÁMARA';log('Cámara abierta. Capa óptica real se integrará después de validar AUTH-01.')}catch(e){log('No se pudo abrir cámara: '+e.message)}}
+</script></body></html>
