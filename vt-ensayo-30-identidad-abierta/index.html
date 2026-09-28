@@ -1,15 +1,15 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VT-30 Identidad abierta</title></head><body style="margin:0;background:#07130f;color:white"><p style="font-family:Arial;padding:20px">Cargando VT-30…</p><script>
 (async()=>{
- const r=await fetch('../vt-ensayo-29-recaptura-ancla/index.html?vt30=1',{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar VT-29');let h=await r.text();
+ const r=await fetch('../vt-ensayo-29-recaptura-ancla/index.html?vt30=2',{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar VT-29');let h=await r.text();
  h=h.replaceAll('VT-29 Recaptura del ancla','VT-30 Identidad abierta').replaceAll('VISIÓN TAG · ENSAYO VT-29','VISIÓN TAG · ENSAYO VT-30');
  h=h.replace('Sólo el mismo ID autenticado con otro 0/36 puede recapturar el ancla. Sólo 0/36 suma; 10/10 valida.','Durante recaptura global no se impone la ID del ancla anterior: cualquier VT con lectura exacta 0/36 queda expuesto como OBSERVED. El mismo ID puede recuperar; un ID distinto provoca sustitución de identidad. Sólo 0/36 suma; 10/10 valida.');
  const old="if(best.d.dist===0&&best.d.id!==null&&(!anchorId||best.d.id===anchorId)){let wasRecover=vt29Recover;anchor=best.p.map(z=>({...z}));anchorId=best.d.id;anchorAge=0;vt29Recover=false;vt29Lost=0;seedOF(gr,anchor);let n=hit(best.d.id);";
- const neu="if(best.d.dist===0&&best.d.id!==null){let wasRecover=vt29Recover,previousAnchorId=anchorId,isSwitch=previousAnchorId!==null&&previousAnchorId!==best.d.id;window.VT30_OBSERVED_ID=best.d.id;window.VT30_OBSERVED_DIST=0;window.VT30_SWITCH=isSwitch;window.VT30_PREVIOUS_ID=previousAnchorId;if(isSwitch){S('dec','✓ 6. OBSERVED EXACTO · ID '+best.d.id+' · 36/36','bad');S('trk','⚠ 5. CAMBIO DE IDENTIDAD · '+previousAnchorId+' → '+best.d.id,'bad');$('hyp').textContent='Hipótesis: IDENTITY SWITCH · OBSERVED ID '+best.d.id;anchorAge++;}else{anchor=best.p.map(z=>({...z}));anchorId=best.d.id;anchorAge=0;vt29Recover=false;vt29Lost=0;seedOF(gr,anchor);let n=hit(best.d.id);";
+ const neu="if(best.d.dist===0&&best.d.id!==null){window.VT30_OBSERVED_ID=best.d.id;window.VT30_OBSERVED_DIST=0;window.VT30_PREVIOUS_ID=anchorId;window.VT30_SWITCH=(anchorId!==null&&anchorId!==best.d.id);if(window.VT30_SWITCH){S('dec','✓ 6. OBSERVED EXACTO · ID '+best.d.id+' · 36/36','bad');S('trk','⚠ 5. CAMBIO DE IDENTIDAD · '+anchorId+' → '+best.d.id,'bad');$('hyp').textContent='Hipótesis: IDENTITY SWITCH · OBSERVED ID '+best.d.id;}else{let wasRecover=vt29Recover;anchor=best.p.map(z=>({...z}));anchorId=best.d.id;anchorAge=0;vt29Recover=false;vt29Lost=0;seedOF(gr,anchor);let n=hit(best.d.id);";
  if(!h.includes(old))throw Error('Bloque exacto VT-29 incompatible');h=h.replace(old,neu);
- const marker="$('diag').textContent='Diagnóstico: distancia al patrón '+best.d.dist+'/36';";
- if(!h.includes(marker))throw Error('Cierre exacto incompatible');h=h.replace(marker,"} "+marker);
+ const close="if(n>=10){validatedVT=best.d.id;done=true;$('id').textContent='VT: VT-'+String(best.d.id).padStart(6,'0');S('flow','✓ 8. VT VALIDADO · promociones habilitadas','ok');$('enter').style.display='block'}}";
+ if(!h.includes(close))throw Error('Bloque validación VT-29 incompatible');h=h.replace(close,close+'}');
  const bestLine="let best=null;for(const t of tries){let z=decode(th,t.p);if(!best||z.d.dist<best.d.dist)best={...z,...t};if(z.d.dist===0)break}";
- if(!h.includes(bestLine))throw Error('Selección best incompatible');h=h.replace(bestLine,bestLine+";if(best){window.VT30_BEST_ID=best.d.id;window.VT30_BEST_DIST=best.d.dist;window.VT30_MODE=mode}");
+ if(h.includes(bestLine))h=h.replace(bestLine,bestLine+";if(best){window.VT30_BEST_ID=best.d.id;window.VT30_BEST_DIST=best.d.dist;window.VT30_MODE=mode}");
  document.open();document.write(h);document.close();
 })().catch(e=>{document.body.innerHTML='<pre style="white-space:pre-wrap;color:white;background:#07130f;padding:20px;font:16px Arial">VT-30 ERROR\n'+e.message+'</pre>'});
 </script></body></html>
