@@ -13,6 +13,10 @@
  h=h.replace(exact,"let wasRecover=vt29Recover,previousId=anchorId,identitySwitch=(previousId!==null&&best.d.id!==previousId);anchor=best.p.map(z=>({...z}));anchorId=best.d.id;anchorAge=0;vt29Recover=false;vt29Lost=0;seedOF(gr,anchor);if(identitySwitch){hits=[];exactId=null;validatedVT=null;done=false;$('enter').classList.remove('show')}let n=hit(best.d.id);");
 
  h=h.replace("for(const t of tries){let z=score(src,t.p,t.label);if(!best||z.d.dist<best.d.dist){if(best)best.o.delete();best=z}else z.o.delete();if(z.d.dist===0)break}if(!best&&anchor){","for(const t of tries){let z=score(src,t.p,t.label);if(!best||z.d.dist<best.d.dist){if(best)best.o.delete();best=z}else z.o.delete();if(z.d.dist===0)break}if(vt29Recover&&best&&best.d.dist>0&&best.d.dist<=8){let base=best.p.map(z=>({...z}));let fine=[];for(const s of[.985,.99,.995,1.005,1.01,1.015])fine.push({p:hyp(base,s),label:'FINA ESC '+s.toFixed(3)});for(const u of[1,2,3,4]){for(let k=0;k<4;k++)for(const dx of[-u,0,u])for(const dy of[-u,0,u])if(dx||dy){let q=base.map(z=>({...z}));q[k].x+=dx;q[k].y+=dy;fine.push({p:q,label:'FINA ESQ'+(k+1)+' '+dx+','+dy})}}for(const t of fine){let z=score(src,t.p,t.label);if(z.d.dist<best.d.dist){best.o.delete();best=z}else z.o.delete();if(best.d.dist===0)break}}if(!best&&anchor){");
+
+ // En recaptura global, priorizar el marco exterior cuadrado y descartar rectángulos internos.
+ h=h.replace("if(f>.0007&&f<.45&&fill>.20)out.push({p:canonical(p),a})","let ar=Math.max(r.width,r.height)/Math.max(1,Math.min(r.width,r.height));if(f>.0007&&f<.45&&fill>.20&&(!vt29Recover||ar<1.38))out.push({p:canonical(p),a})");
+ h=h.replace("out.sort((a,b)=>b.a-a.a);return out.slice(0,20)","out.sort((a,b)=>b.a-a.a);if(vt29Recover&&out.length){let A=out[0].a;out=out.filter(z=>z.a>=A*.18)}return out.slice(0,20)");
  document.open();document.write(h);document.close();
 })().catch(e=>{document.body.innerHTML='<pre style="white-space:pre-wrap;color:white;background:#07130f;padding:20px;font:16px Arial">VT-30 ERROR\n'+e.message+'</pre>'});
 </script></body></html>
