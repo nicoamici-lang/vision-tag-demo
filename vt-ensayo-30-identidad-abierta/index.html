@@ -18,7 +18,7 @@
  h=h.replace("for(const c of cs.slice(0,18))for(const s of[.72,.78,.84,.90,.96,1,1.04,1.10,1.16,1.22,1.28])tries.push({p:hyp(c.p,s),label:'RECAPTURA '+s.toFixed(2)})","for(const c of cs.slice(0,18))for(const s of[.72,.78,.84,.90,.96,1,1.04,1.10,1.16,1.22,1.28,1.36,1.44,1.52,1.60,1.68,1.76])tries.push({p:hyp(c.p,s),label:'MARCO '+s.toFixed(2)})");
  // En recaptura global, priorizar el marco exterior cuadrado y descartar rectángulos internos.
  h=h.replace("if(f>.0007&&f<.45&&fill>.20)out.push({p:canonical(p),a})","let ar=Math.max(r.width,r.height)/Math.max(1,Math.min(r.width,r.height));if(f>.0007&&f<.45&&fill>.20&&(!vt29Recover||ar<1.38))out.push({p:canonical(p),a})");
- h=h.replace("out.sort((a,b)=>b.a-a.a);return out.slice(0,20)","out.sort((a,b)=>b.a-a.a);if(vt29Recover&&out.length){let A=out[0].a;out=out.filter(z=>z.a>=A*.18)}return out.slice(0,20)");
+ h=h.replace("out.sort((a,b)=>b.a-a.a);return out.slice(0,20)","out.sort((a,b)=>b.a-a.a);if(vt29Recover&&out.length){let A=out[0].a,frameMin=w*h*.018;out=out.filter(z=>z.a>=Math.max(A*.42,frameMin))}return out.slice(0,20)");
  document.open();document.write(h);document.close();
 })().catch(e=>{document.body.innerHTML='<pre style="white-space:pre-wrap;color:white;background:#07130f;padding:20px;font:16px Arial">VT-30 ERROR\n'+e.message+'</pre>'});
 </script></body></html>
