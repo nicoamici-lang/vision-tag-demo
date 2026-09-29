@@ -15,8 +15,11 @@
  if(!h.includes(search))throw Error('VT-29 no contiene búsqueda global esperada');
  h=h.replace(search,"let cs=candidates(th,w,h);for(const c of cs.slice(0,24))for(const s of[.68,.72,.76,.80,.84,.88,.92,.96,1,1.04,1.08,1.12,1.16,1.20,1.24,1.28,1.32])tries.push({p:hyp(c.p,s),label:'GLOBAL AMPLIA '+s.toFixed(2)});mode=anchor?'RECAPTURA FINA GLOBAL':'GLOBAL FINA'");
  const evalLoop="for(const t of tries){let z=score(src,t.p,t.label);if(!best||z.d.dist<best.d.dist){if(best)best.o.delete();best=z}else z.o.delete();if(z.d.dist===0)break}if(!best&&anchor){";
- if(!h.includes(evalLoop))throw Error('VT-29 no contiene evaluador esperado');
- h=h.replace(evalLoop,"for(const t of tries){let z=score(src,t.p,t.label);if(!best||z.d.dist<best.d.dist){if(best)best.o.delete();best=z}else z.o.delete();if(z.d.dist===0)break}if(best&&best.d.dist>0&&best.d.dist<=12){let bp=best.p.map(z=>({...z})),fine=micro(bp);for(const t of fine){let z=score(src,t.p,'AJUSTE FINO '+t.label);if(z.d.dist<best.d.dist){best.o.delete();best=z}else z.o.delete();if(best.d.dist===0)break}}if(!best&&anchor){");
+ const evalLoop29="for(const t of tries){let z=score(src,t.p,t.label);if(!best||z.d.dist<best.d.dist){if(best)best.o.delete();best=z}else z.o.delete();if(z.d.dist===0)break}if(!best&&anchor){";
+ const evalLoopActual="for(const t of tries){let z=score(src,t.p,t.label);if(!best||z.d.dist<best.d.dist){if(best)best.o.delete();best=z}else z.o.delete();if(z.d.dist===0)break}if(!best&&anchor){";
+ let target=evalLoopActual;
+ if(!h.includes(target))throw Error('VT-29 no contiene evaluador esperado');
+ h=h.replace(target,"for(const t of tries){let z=score(src,t.p,t.label);if(!best||z.d.dist<best.d.dist){if(best)best.o.delete();best=z}else z.o.delete();if(z.d.dist===0)break}if(best&&best.d.dist>0&&best.d.dist<=12){let bp=best.p.map(z=>({...z})),fine=micro(bp);for(const t of fine){let z=score(src,t.p,'AJUSTE FINO '+t.label);if(z.d.dist<best.d.dist){best.o.delete();best=z}else z.o.delete();if(best.d.dist===0)break}}if(!best&&anchor){");
  document.open();document.write(h);document.close();
 })().catch(e=>{document.body.innerHTML='<pre style="white-space:pre-wrap;color:white;background:#07130f;padding:20px;font:16px Arial">VT-31 ERROR\n'+e.message+'</pre>'});
 </script></body></html>
