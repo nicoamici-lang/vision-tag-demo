@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vision Tag V2 · Panel central</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#091b14;color:#f3fff5;font:16px Arial,sans-serif}header{background:#143726;padding:22px}main{max-width:1100px;margin:auto;padding:18px}h1{margin:0;font-size:28px}.red{color:#ed3a4b}.muted{color:#bad1c2;font-size:13px}.bar,.cards{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}.box{background:#173b2a;padding:18px;border-radius:12px;flex:1;min-width:200px}label{display:block;margin:8px 0}input,select,button{font:inherit;border-radius:8px;padding:11px;border:1px solid #52735d}input,select{background:#f5fff5;color:#142719;max-width:100%}button{background:#baf359;color:#092015;font-weight:700;cursor:pointer}button:disabled{opacity:.5}strong.big{font-size:35px;display:block;margin-top:8px}table{border-collapse:collapse;width:100%;font-size:14px}td,th{text-align:left;padding:10px;border-bottom:1px solid #3a654a}th{color:#c9f3d3}.scroll{overflow:auto}.status{padding:12px;background:#254532;border-radius:8px;margin:12px 0}a{color:#baf359}.hidden{display:none}footer{padding:18px;color:#b8d2bf;font-size:13px}
+</style></head><body>
+<header><h1>V<span class="red">•</span>T · PANEL CENTRAL</h1><div class="muted">Piloto Trelew · Datos reales de PostgreSQL · 6 colectivos / 36 marcadores</div></header>
+<main>
+<section class="box"><label for="key">Clave de administrador (ADMIN_KEY)</label><input id="key" type="password" autocomplete="off" placeholder="Ingresá tu clave de Render" style="min-width:280px"><div class="bar"><button id="load">CONSULTAR DATOS</button><button id="clear">BORRAR CLAVE</button></div><div class="muted">La clave solo se utiliza en este navegador para consultar la API. No se guarda en archivos ni en el almacenamiento del navegador.</div></section>
+<div class="status" id="status" role="status">Ingresá la clave y tocá CONSULTAR DATOS.</div>
+<section id="results" class="hidden">
+<div class="bar"><label>Colectivo <select id="bus"><option value="0">Todos los colectivos</option><option value="1">Colectivo 1</option><option value="2">Colectivo 2</option><option value="3">Colectivo 3</option><option value="4">Colectivo 4</option><option value="5">Colectivo 5</option><option value="6">Colectivo 6</option></select></label><button id="refresh">ACTUALIZAR</button></div>
+<div class="cards"><div class="box">Escaneos <strong class="big" id="scans">0</strong><span class="muted">No facturables</span></div><div class="box">Aperturas de promoción <strong class="big" id="opens">0</strong><span class="muted">Interacciones potencialmente facturables</span></div><div class="box">Marcadores con actividad <strong class="big" id="markers">0</strong></div></div>
+<div class="box"><h2>Actividad por marcador</h2><div class="scroll"><table><thead><tr><th>Marcador</th><th>Colectivo</th><th>Posición</th><th>Escaneos</th><th>Promociones abiertas</th></tr></thead><tbody id="byvt"></tbody></table></div></div>
+<div class="box" style="margin-top:16px"><h2>Últimos 100 eventos</h2><div class="scroll"><table><thead><tr><th>Fecha y hora</th><th>Marcador</th><th>Colectivo</th><th>Tipo</th><th>Promoción</th></tr></thead><tbody id="recent"></tbody></table></div></div>
+</section><footer>Los registros provienen de la API central. Las aperturas se cuentan por evento; la facturación requiere reglas comerciales y validación adicionales.</footer>
+</main>
+<script>
+'use strict';
+const API='https://vision-tag-trelew-api.onrender.com/api/stats';
+const $=id=>document.getElementById(id);
+let data=null;
+const safe=v=>String(v??'');
+function cell(tr,value){const td=document.createElement('td');td.textContent=safe(value);tr.appendChild(td)}
+function render(){
+ if(!data)return;
+ const bus=Number($('bus').value);
+ const rows=(data.byVT||[]).filter(x=>!bus||Number(x.bus)===bus);
+ const recent=(data.recent||[]).filter(x=>!bus||Number(x.bus)===bus);
+ $('scans').textContent=rows.reduce((n,x)=>n+Number(x.scans||0),0);
+ $('opens').textContent=rows.reduce((n,x)=>n+Number(x.opens||0),0);
+ $('markers').textContent=rows.length;
+ const by=$('byvt');by.replaceChildren();
+ for(const x of rows){const tr=document.createElement('tr');[x.vt,x.bus,x.position,x.scans,x.opens].forEach(v=>cell(tr,v));by.appendChild(tr)}
+ const rec=$('recent');rec.replaceChildren();
+ for(const x of recent){const tr=document.createElement('tr');const dt=new Date(x.created_at);[Number.isNaN(dt.getTime())?x.created_at:dt.toLocaleString('es-AR'),x.vt,x.bus,x.type==='open'?'Promoción abierta':'Escaneo',x.offer||'—'].forEach(v=>cell(tr,v));rec.appendChild(tr)}
+ if(!rows.length)by.innerHTML='<tr><td colspan="5">Sin eventos registrados para este filtro.</td></tr>';
+ if(!recent.length)rec.innerHTML='<tr><td colspan="5">Sin eventos recientes para este filtro.</td></tr>';
+}
+async function load(){
+ const key=$('key').value;
+ if(!key){$('status').textContent='Ingresá ADMIN_KEY para consultar.';return}
+ $('load').disabled=true;$('status').textContent='Consultando servidor...';
+ try{
+  const r=await fetch(API,{headers:{'X-Admin-Key':key},cache:'no-store'});
+  if(r.status===401)throw Error('Clave incorrecta. Revisá ADMIN_KEY en Render.');
+  if(!r.ok)throw Error('El servidor respondió HTTP '+r.status+'.');
+  const d=await r.json();
+  if(!Array.isArray(d.byVT)||!Array.isArray(d.recent))throw Error('Respuesta inesperada del servidor.');
+  data=d;$('results').classList.remove('hidden');render();
+  $('status').textContent='Datos centrales actualizados: '+new Date().toLocaleString('es-AR');
+ }catch(e){$('status').textContent='No se pudo consultar: '+e.message}
+ finally{$('load').disabled=false}
+}
+$('load').onclick=load;$('refresh').onclick=load;$('bus').onchange=render;
+$('clear').onclick=()=>{$('key').value='';data=null;$('results').classList.add('hidden');$('status').textContent='Clave borrada de esta pantalla.'};
+</script></body></html>
