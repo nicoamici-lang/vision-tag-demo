@@ -1,13 +1,12 @@
 {
   "name": "vision-tag-piloto-api",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.21.2",
-    "better-sqlite3": "^11.8.1",
     "pg": "^8.13.1"
   },
   "engines": {
