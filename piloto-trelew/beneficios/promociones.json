@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "updated": "2026-10-27",
+  "offers": [
+    {
+      "id": "pueblo-demo",
+      "name": "Pueblo 1903",
+      "headline": "2×1 cerveza · DEMOSTRACIÓN",
+      "description": "Promoción ficticia para probar el sistema. No válida en el comercio.",
+      "active": true,
+      "demo": true,
+      "ageRestricted": true,
+      "url": "https://nicoamici-lang.github.io/vision-tag-demo/piloto-trelew/demo-pueblo-v2/"
+    }
+  ]
+}
