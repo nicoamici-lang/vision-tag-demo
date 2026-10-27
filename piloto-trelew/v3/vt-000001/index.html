@@ -1,0 +1,38 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vision Tag V3 · Beneficios VT-000001</title><style>*{box-sizing:border-box}body{margin:0;background:#081b12;color:#f5fff5;font:16px Arial,sans-serif}header{background:#123a26;padding:24px 18px}main{max-width:680px;margin:auto;padding:18px}h1{font-size:32px;margin:0}.red{color:#ef3549}.tag{font-weight:bold;color:#baf359;margin-top:8px}.card{background:#17432d;border-radius:14px;padding:20px;margin:16px 0}.btn{background:#baff62;color:#092016;border:0;border-radius:10px;padding:14px 18px;font-weight:800;font-size:17px;cursor:pointer;width:100%}.btn:disabled{opacity:.65}.muted{font-size:13px;color:#b8d3bf}.status{padding:12px;border-radius:10px;background:#294c35;margin:16px 0}footer{font-size:12px;color:#b8d3bf;padding:20px}</style></head><body><header><h1>V<span class="red">•</span>T · BENEFICIOS</h1><div class="tag">VT-000001 · Colectivo 1 · Posición 1</div><p>¡Bienvenido! Elegí una promoción para conocer el beneficio.</p></header><main><div id="status" class="status" role="status">Cargando beneficios…</div><div class="card"><h2>☕ Cafetería · 2×1</h2><p>Promoción demostrativa para el piloto Trelew.</p><button class="btn" data-offer="cafe">VER PROMOCIÓN</button><p class="muted" data-result="cafe"></p></div><div class="card"><h2>🛍️ Comercio · 20% de descuento</h2><p>Promoción demostrativa para el piloto Trelew.</p><button class="btn" data-offer="comercio">VER PROMOCIÓN</button><p class="muted" data-result="comercio"></p></div><p class="muted">El acceso al marcador se registra como escaneo (no facturable). Solo tocar «VER PROMOCIÓN» registra una apertura de promoción.</p></main><footer>Vision Tag V3 · Prueba técnica · Ofertas ficticias, sin validez comercial.</footer><script>
+'use strict';
+const API='https://vision-tag-trelew-api.onrender.com/api/events';
+const VT='VT-000001',QUEUE='vt_v3_pending_000001';
+const SESSION=(()=>{let x=sessionStorage.getItem('vt_v3_session');if(!x){x=crypto.randomUUID();sessionStorage.setItem('vt_v3_session',x)}return x})();
+const status=document.getElementById('status');
+const read=()=>{try{return JSON.parse(localStorage.getItem(QUEUE)||'[]')}catch{return []}};
+let sending=false;
+async function sendPending(){
+ if(sending)return;sending=true;
+ try{
+  for(const item of read()){
+   let res;
+   try{res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(item)})}
+   catch(e){status.textContent='Sin conexión: eventos pendientes de envío. Las promociones siguen disponibles.';return}
+   if(!res.ok){status.textContent='El servidor no confirmó el registro (HTTP '+res.status+').';return}
+   const result=await res.json();
+   if(!result.ok){status.textContent='El servidor no confirmó el registro.';return}
+   localStorage.setItem(QUEUE,JSON.stringify(read().filter(x=>x.id!==item.id)));
+  }
+  status.textContent='✓ Conexión central confirmada. Disfrutá los beneficios.';
+ }finally{sending=false}
+}
+function record(type,offer=''){
+ const q=read();q.push({id:crypto.randomUUID(),vt:VT,type,offer,session:SESSION});
+ localStorage.setItem(QUEUE,JSON.stringify(q));sendPending();
+}
+const scanKey='vt_v3_scanned_'+VT;
+if(!sessionStorage.getItem(scanKey)){sessionStorage.setItem(scanKey,'1');record('scan')}else sendPending();
+document.querySelectorAll('[data-offer]').forEach(button=>button.addEventListener('click',()=>{
+ const offer=button.dataset.offer;
+ if(button.disabled)return;
+ button.disabled=true;button.textContent='✓ PROMOCIÓN ABIERTA';
+ document.querySelector('[data-result="'+offer+'"]').textContent='Interacción registrada para '+VT+'. Promoción de demostración.';
+ record('open',offer);
+}));
+window.addEventListener('online',sendPending);
+</script></body></html>
