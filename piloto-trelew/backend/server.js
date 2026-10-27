@@ -92,7 +92,7 @@ function merchantAuthorized(req) {
 }
 app.post('/api/coupons', async (req,res) => {
   const { vt } = req.body || {};
-  if (vt !== undefined && (typeof vt !== 'string' || !/^VT-\\d{6}$/.test(vt) || Number(vt.slice(3)) < 1 || Number(vt.slice(3)) > 36)) return res.status(400).json({error:'invalid marker'});
+  if (vt !== undefined && (typeof vt !== 'string' || !/^VT-\d{6}$/.test(vt) || Number(vt.slice(3)) < 1 || Number(vt.slice(3)) > 36)) return res.status(400).json({error:'invalid marker'});
   const code = 'VT-PUE-' + crypto.randomBytes(6).toString('hex').toUpperCase();
   try {
     await pool.query('INSERT INTO demo_coupons (code,offer,vt) VALUES ($1,$2,$3)',[code,couponOffer,vt||null]);
