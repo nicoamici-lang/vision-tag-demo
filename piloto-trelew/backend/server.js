@@ -103,9 +103,9 @@ app.get('/api/coupons/:code', async(req,res)=>{
   const code=String(req.params.code||'').toUpperCase();
   if(!/^VT-PUE-[A-F0-9]{12}$/.test(code))return res.status(400).json({error:'invalid code'});
   try{
-    const q=await pool.query('SELECT code,used_at FROM demo_coupons WHERE code=$1',[code]);
+    const q=await pool.query('SELECT code,used_at,vt FROM demo_coupons WHERE code=$1',[code]);
     if(!q.rowCount)return res.status(404).json({error:'not found'});
-    res.json({ok:true,code,status:q.rows[0].used_at?'used':'available'});
+    res.json({ok:true,code,status:q.rows[0].used_at?'used':'available',vt:q.rows[0].vt});
   }catch(e){console.error('Coupon lookup failed:',e.message);res.status(503).json({error:'storage unavailable'})}
 });
 app.post('/api/coupons/redeem',async(req,res)=>{
