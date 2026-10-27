@@ -141,7 +141,7 @@ async function start() {
       used_at TIMESTAMPTZ
     )`);
     const port = process.env.PORT || 3000;
-    app.listen(port, () => console.log('VT pilot API listening on port ' + port + ' (PostgreSQL)'));
+    app.listen(port, '0.0.0.0', () => console.log('VT pilot API listening on 0.0.0.0:' + port + ' (PostgreSQL)'));
   } catch (err) {
     console.error('PostgreSQL startup failed:', err.message);
     process.exit(1);
