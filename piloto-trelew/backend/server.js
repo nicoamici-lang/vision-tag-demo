@@ -20,7 +20,7 @@ pool.on('error', err => console.error('PostgreSQL idle connection error:', err.m
 app.use((req, res, next) => {
   res.set('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGIN || 'https://nicoamici-lang.github.io');
   res.set('Vary', 'Origin');
-  res.set('Access-Control-Allow-Headers', 'Content-Type,X-Admin-Key');
+  res.set('Access-Control-Allow-Headers', 'Content-Type,X-Admin-Key,X-Merchant-Key');
   res.set('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
@@ -82,6 +82,44 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
+
+const couponOffer = 'pueblo-demo';
+function merchantAuthorized(req) {
+  const expected = process.env.MERCHANT_KEY || '';
+  const provided = req.get('X-Merchant-Key') || '';
+  const a = Buffer.from(provided), b = Buffer.from(expected);
+  return !!expected && a.length === b.length && crypto.timingSafeEqual(a,b);
+}
+app.post('/api/coupons', async (req,res) => {
+  const { vt } = req.body || {};
+  if (vt !== undefined && (typeof vt !== 'string' || !/^VT-\\d{6}$/.test(vt) || Number(vt.slice(3)) < 1 || Number(vt.slice(3)) > 36)) return res.status(400).json({error:'invalid marker'});
+  const code = 'VT-PUE-' + crypto.randomBytes(6).toString('hex').toUpperCase();
+  try {
+    await pool.query('INSERT INTO demo_coupons (code,offer,vt) VALUES ($1,$2,$3)',[code,couponOffer,vt||null]);
+    res.status(201).json({ok:true,code,status:'available'});
+  } catch(e){console.error('Coupon issue failed:',e.message);res.status(503).json({error:'storage unavailable'})}
+});
+app.get('/api/coupons/:code', async(req,res)=>{
+  const code=String(req.params.code||'').toUpperCase();
+  if(!/^VT-PUE-[A-F0-9]{12}$/.test(code))return res.status(400).json({error:'invalid code'});
+  try{
+    const q=await pool.query('SELECT code,used_at FROM demo_coupons WHERE code=$1',[code]);
+    if(!q.rowCount)return res.status(404).json({error:'not found'});
+    res.json({ok:true,code,status:q.rows[0].used_at?'used':'available'});
+  }catch(e){console.error('Coupon lookup failed:',e.message);res.status(503).json({error:'storage unavailable'})}
+});
+app.post('/api/coupons/redeem',async(req,res)=>{
+  if(!merchantAuthorized(req))return res.status(401).json({error:'unauthorized'});
+  const code=String(req.body?.code||'').trim().toUpperCase();
+  if(!/^VT-PUE-[A-F0-9]{12}$/.test(code))return res.status(400).json({error:'invalid code'});
+  try{
+    const q=await pool.query('UPDATE demo_coupons SET used_at=NOW() WHERE code=$1 AND used_at IS NULL RETURNING code',[code]);
+    if(q.rowCount)return res.json({ok:true,status:'redeemed'});
+    const found=await pool.query('SELECT used_at FROM demo_coupons WHERE code=$1',[code]);
+    return res.status(found.rowCount?409:404).json({error:found.rowCount?'already redeemed':'not found'});
+  }catch(e){console.error('Coupon redemption failed:',e.message);res.status(503).json({error:'storage unavailable'})}
+});
+
 async function start() {
   try {
     await pool.query('SELECT 1');
@@ -94,6 +132,13 @@ async function start() {
       type TEXT NOT NULL,
       offer TEXT,
       session_hash TEXT
+    )`);
+    await pool.query(`CREATE TABLE IF NOT EXISTS demo_coupons (
+      code TEXT PRIMARY KEY,
+      offer TEXT NOT NULL,
+      vt TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      used_at TIMESTAMPTZ
     )`);
     const port = process.env.PORT || 3000;
     app.listen(port, () => console.log('VT pilot API listening on port ' + port + ' (PostgreSQL)'));
